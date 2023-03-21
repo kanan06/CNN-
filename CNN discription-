@@ -1,0 +1,14 @@
+AI-model
+As mentioned above, our AI model was based on two convolutional networks. The Organ CNN from [21], segments a number of different organs and inputs an organ
+mask marking the lungs, vertebral bones, liver, aorta and the heart to the Detection CNN. Apart from this, the Detection CNN also takes the PET and CT images
+as input (Fig. 1). To simplify the structure, the PET image was resampled to the CT resolution. Combining this information, the Detection CNN tries to classify
+each image voxel as either background or lung lesion. The Detection CNN has the network architecture from [21] except that it takes a multi-channel input consisting of the PET image, the CT image and the organ mask previously described.
+Training the Detection CNN The Detection CNN was trained using the training set (66 images, with 74 lesions in total) for direct parameter estimation and the validation
+set (23 images, with 35 lesions in total) to choose learning rate. Since exact delineation of lesions is virtually impossible, mimicking the exact boundaries of the annotations is
+not relevant.  Thus, any voxels within 10 mm from the annotated lesions are marked as “don’t-care”. This means that when computing the loss function, there is no loss for
+these voxels regardless of the output label. For the remaining voxels, the standard negative log-likelihood loss was used. Naturally, this leads to a slight over-segmentation of
+the lesions, but as detection is the main goal here, this was considered acceptable.The optimization was performed using the Adam method with Nesterov momentum.
+The learning rate was initialized at 0.0001 and reduced when the validation loss reached a plateau. Each epoch consisted of 500 batches each containing 75 patches; the
+patch size is smallest possible for the network, 136 × 136 × 72 pixels. After 50 epochs,the model was evaluated on the training group. 
+Patches whose center points were clas-sified as false positives were sampled more frequently (10% of the samples) when the training was restarted. 
+This cycle was repeated ten times.
